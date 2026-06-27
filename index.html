@@ -228,7 +228,6 @@ window.addEventListener('DOMContentLoaded', () => {
 async function carregarDadosDoGitHub() {
   try {
     setStatus('Lendo arquivo de dados...');
-    // O site vai procurar um arquivo exato com o nome 'dados.xlsx'
     const url = 'dados.xlsx'; 
     const res = await fetch(url);
     if (!res.ok) throw new Error('Arquivo dados.xlsx não encontrado no GitHub. Faça o upload dele.');
@@ -662,11 +661,11 @@ function renderPedido(){
 
   let html=bannerHtml+metricsHTML([
     {label:'Peso total',        val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
-    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
-    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
+    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
+    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação',  val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:'#A32D2D'},
+    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:#A32D2D'},
     {label:'TAGs',              val:tagKeys.length,  sub:'no pedido'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -768,11 +767,11 @@ function renderTag(){
   const maxProd=Math.max(...prodKeys.map(p=>sumItens(produtos[p],'pesoTotal')),1);
   let html=metricsHTML([
     {label:'Peso total TAG',   val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
-    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
-    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
+    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:'#A32D2D'},
+    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:#A32D2D'},
     {label:'Produtos',         val:prodKeys.length, sub:'clique para detalhar'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -813,11 +812,11 @@ function renderProduto(){
   const itensPend=itens.filter(it=>it.pesoPendExp>0);
   let html=metricsHTML([
     {label:'Peso total',       val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
-    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
-    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
+    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:itensPend.length+' desenhos',color:'#A32D2D'},
+    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:itensPend.length+' desenhos',color:#A32D2D'},
     {label:'Itens',            val:itens.length,    sub:'neste produto'},
   ]);
   html+=progHTML(pctFab,pctExp);
