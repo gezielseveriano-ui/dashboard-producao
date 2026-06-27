@@ -3,9 +3,6 @@
 body{font-family:var(--font-sans)}
 .top-bar{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.25rem;border-bottom:0.5px solid var(--color-border-tertiary);flex-wrap:wrap;gap:10px}
 .top-bar h1{font-size:15px;font-weight:500;color:var(--color-text-primary)}
-.upload-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;cursor:pointer;font-size:13px;color:var(--color-text-primary)}
-.upload-btn:hover{background:var(--color-background-secondary)}
-#fileInput{display:none}
 .toolbar{display:flex;align-items:center;gap:8px;padding:.75rem 1.25rem;border-bottom:0.5px solid var(--color-border-tertiary);flex-wrap:wrap}
 .filter-input{padding:6px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;width:180px;background:var(--color-background-primary);color:var(--color-text-primary)}
 .filter-input:focus{outline:none;border-color:#378ADD}
@@ -88,7 +85,7 @@ body{font-family:var(--font-sans)}
 .pill-gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
 /* DETALHE PEDIDO */
 .cliente-banner{margin:1rem 1.25rem 0;background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
-.cb-equip{font-size:18px;font-weight:600;color:var(--color-text-primary);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px}
+.cb-equip覆{font-size:18px;font-weight:600;color:var(--color-text-primary);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px}
 .cb-dates{display:flex;gap:10px;flex-wrap:wrap}
 .cb-date{font-size:12px;padding:4px 12px;border-radius:20px;font-weight:500;display:inline-flex;align-items:center;gap:5px}
 .cb-obs{font-size:12px;color:var(--color-text-secondary);margin-top:8px;padding:6px 10px;background:var(--color-background-primary);border-radius:var(--border-radius-md);border-left:3px solid #378ADD;font-style:italic}
@@ -151,14 +148,6 @@ body{
   box-shadow:0 10px 25px rgba(0,0,0,.12);
 }
 .top-bar h1{color:white;font-size:20px;font-weight:700}
-.upload-btn{
-  background:white;
-  color:#1e3c72;
-  border:none;
-  border-radius:12px;
-  padding:10px 18px;
-  font-weight:600;
-}
 .global-metrics,.metrics,.cap-cards{
   gap:16px;
 }
@@ -189,16 +178,12 @@ body{
 }
 </style>
 
-
 <div class="top-bar">
   <div style="display:flex;align-items:center;gap:8px">
     <i class="ti ti-building-factory-2" style="font-size:18px;color:#378ADD" aria-hidden="true"></i>
     <h1>Controle de Produção</h1>
   </div>
-  <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-    <i class="ti ti-upload" aria-hidden="true"></i>Importar planilha
-  </button>
-  <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls">
+  <div style="font-size:12px;background:rgba(255,255,255,0.15);padding:6px 12px;border-radius:8px">🔄 Conectado ao Google Sheets</div>
 </div>
 
 <div id="capacidadeSection" style="display:none"></div>
@@ -206,26 +191,25 @@ body{
 <div class="nav-bar" id="navBar" style="display:none"></div>
 <div id="mainContent">
   <div class="empty">
-    <i class="ti ti-table-import" aria-hidden="true"></i>
-    Importe a planilha para ver o painel de todos os pedidos.<br>
-    <span style="font-size:12px;margin-top:6px;display:block">Abas lidas: <strong>MICRO</strong> (produção), <strong>CLIENTE</strong> (equipamentos e datas) e <strong>CAPACIDADE</strong> (limites por setor).</span>
+    <i class="ti ti-loader" aria-hidden="true"></i>
+    Carregando informações direto da planilha do Google Planilhas...
   </div>
 </div>
-<div class="status-bar" id="statusBar">Aguardando importação...</div>
+<div class="status-bar" id="statusBar">Iniciando conexão...</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 let DB = {};
 let CLIENTES = {};
-let CAPACIDADE = {}; // setor -> capacidade_ton (apenas linha 9 da aba CAPACIDADE)
+let CAPACIDADE = {}; 
 let allPedidos = [];
 let state = {tela:'geral', pedido:null, tag:null, produto:null};
 const hoje = new Date(); hoje.setHours(0,0,0,0);
 let capChartInstance = null;
 
-// Mapeamento: nome do produto na aba MICRO -> coluna da aba CAPACIDADE
-// Colunas da aba CAPACIDADE: idx1=ESTRUTURA, 2=USINAGEM, 3=TAMBOR, 4=ROLOS, 5=BASES ROLETES, 6=REVESTIMENTO, 7=RMF
+const SPREADSHEET_ID = '1VvWQ01zvLEFOKnIKRRid6VcTw2pJlkfr'; // 👈 Sincronizado com sua planilha!
+
 const PRODUTO_TO_SETOR = {
   'ESTRUTURA':     'ESTRUTURA',
   'USINAGEM':      'USINAGEM',
@@ -239,15 +223,27 @@ const PRODUTO_TO_SETOR = {
 };
 const SETORES_ORDEM = ['ESTRUTURA','USINAGEM','TAMBOR','ROLOS','BASES ROLETES','REVESTIMENTO','RMF','TECMETAL','CSM'];
 
-document.getElementById('fileInput').addEventListener('change', async e => {
-  const file = e.target.files[0]; if (!file) return;
-  setStatus('Lendo planilha...');
-  const buf = await file.arrayBuffer();
-  let wb;
-  try { wb = XLSX.read(buf,{type:'array',cellDates:true}); }
-  catch(err) { setStatus('Erro: '+err.message); return; }
+window.addEventListener('DOMContentLoaded', () => {
+  carregarDadosDoGoogle();
+});
 
-  // ── aba CLIENTE ──
+async function carregarDadosDoGoogle() {
+  try {
+    setStatus('Buscando planilha no Google Drive...');
+    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=xlsx`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Não foi possível acessar a planilha. Verifique se ela foi publicada na web.');
+    
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, {type: 'array', cellDates: true});
+    processarPlanilha(wb);
+  } catch (err) {
+    setStatus('Erro de conexão: ' + err.message);
+    document.getElementById('mainContent').innerHTML = `<div class="empty" style="color:#A32D2D"><i class="ti ti-alert-triangle"></i> Falha ao carregar os dados automático. Verifique as configurações.</div>`;
+  }
+}
+
+function processarPlanilha(wb) {
   CLIENTES = {};
   const csName = wb.SheetNames.find(n=>n.trim().toUpperCase()==='CLIENTE');
   if(csName){
@@ -271,15 +267,12 @@ document.getElementById('fileInput').addEventListener('change', async e => {
     }
   }
 
-  // ── aba CAPACIDADE — apenas linha 9 (índice 8) = CAPACIDADE (TON) ──
   CAPACIDADE = {};
   const capName = wb.SheetNames.find(n=>n.trim().toUpperCase()==='CAPACIDADE');
   if(capName){
     const capRows = XLSX.utils.sheet_to_json(wb.Sheets[capName],{header:1,defval:null});
-    // Linha 1 (idx=0): header ETAPAS | ESTRUTURA | USINAGEM | TAMBOR | ROLOS | BASES ROLETES | REVESTIMENTO | RMF | TECMETAL | CSM | CARGA TOTAL
-    // Linha 9 (idx=8): CAPACIDADE (TON) -> valores nas colunas 1..9
-    const colNames = capRows[1] ? capRows[1].slice(1) : []; // cabeçalhos dos setores (linha 2, índice 1)
-    const capRow   = capRows[8] ? capRows[8].slice(1) : []; // linha 9 (índice 8), valores
+    const colNames = capRows[1] ? capRows[1].slice(1) : []; 
+    const capRow   = capRows[8] ? capRows[8].slice(1) : []; 
     colNames.forEach((col,i)=>{
       if(!col) return;
       const nome=String(col).trim().toUpperCase();
@@ -288,7 +281,6 @@ document.getElementById('fileInput').addEventListener('change', async e => {
     });
   }
 
-  // ── aba MICRO ──
   DB = {};
   const msName = wb.SheetNames.find(n=>n.trim().toUpperCase()==='MICRO');
   if(!msName){setStatus('Aba MICRO não encontrada.');return;}
@@ -305,7 +297,7 @@ document.getElementById('fileInput').addEventListener('change', async e => {
       qte:n(r[2]), pesoUnit:n(r[6]), pesoTotal:n(r[7]),
       fabricado:n(r[18]), expedido:n(r[23]),
       pendFab:n(r[19]), qtdPendExp:n(r[24]), pesoPendExp:n(r[25]),
-      produto, // guardar produto para mapear setor
+      produto, 
     };
     if(!DB[pedido]) DB[pedido]={};
     if(!DB[pedido][tag]) DB[pedido][tag]={};
@@ -317,11 +309,9 @@ document.getElementById('fileInput').addEventListener('change', async e => {
   state={tela:'geral',pedido:null,tag:null,produto:null};
   renderCapacidade();
   renderTela();
-  setStatus(`Carregado: ${nLinhas.toLocaleString('pt-BR')} linhas · ${allPedidos.length} pedidos · ${Object.keys(CLIENTES).length} clientes · ${Object.keys(CAPACIDADE).length} setores`);
-  e.target.value='';
-});
+  setStatus(`Sincronizado automaticamente · ${allPedidos.length} pedidos em carteira`);
+}
 
-/* ── CAPACIDADE: calcula por setor a partir da MICRO ── */
 function calcCapacidadePorSetor(){
   const setores={};
   SETORES_ORDEM.forEach(s=>{
@@ -331,7 +321,7 @@ function calcCapacidadePorSetor(){
     Object.values(DB[pedido]).forEach(tags=>{
       Object.entries(tags).forEach(([produto,itens])=>{
         const setor=(PRODUTO_TO_SETOR[produto.toUpperCase()]||produto.toUpperCase());
-        if(!setores[setor]) return; // ignora produtos sem setor mapeado
+        if(!setores[setor]) return; 
         itens.forEach(it=>{
           setores[setor].pesoTotal   += it.pesoTotal;
           setores[setor].fabricado   += it.fabricado;
@@ -345,11 +335,9 @@ function calcCapacidadePorSetor(){
   return setores;
 }
 
-/* ── RENDERIZA PAINEL DE CAPACIDADE ── */
 function renderCapacidade(){
   const setores = calcCapacidadePorSetor();
   const ativos = SETORES_ORDEM.filter(s=>setores[s].capacidade>0 || setores[s].pesoTotal>0);
-
   let totCap=0, totProg=0, totPendFab=0, totNaEmp=0, totPendExp=0;
   ativos.forEach(s=>{
     const d=setores[s];
@@ -471,9 +459,7 @@ function renderCapacidade(){
     </div>
   </div>`;
 
-  // Destruir gráfico anterior se existir
   if(capChartInstance){capChartInstance.destroy();capChartInstance=null;}
-
   const ctx=document.getElementById('capBarChart');
   if(ctx){
     capChartInstance=new Chart(ctx,{
@@ -484,7 +470,7 @@ function renderCapacidade(){
           {label:'Capacidade mensal', data:ativos.map(s=>+(setores[s].capacidade/1000).toFixed(2)), backgroundColor:'#378ADD', borderRadius:3, borderSkipped:false},
           {label:'Pend. fabricação',  data:ativos.map(s=>+(setores[s].pendFab/1000).toFixed(2)),    backgroundColor:'#E8A838', borderRadius:3, borderSkipped:false},
           {label:'Capacidade livre',  data:ativos.map(s=>+Math.max(0,(setores[s].capacidade-setores[s].pendFab)/1000).toFixed(2)), backgroundColor:'#27A745', borderRadius:3, borderSkipped:false},
-          {label:'Pend. expedição',   data:ativos.map(s=>+(setores[s].pesoPendExp/1000).toFixed(2)), backgroundColor:'#A32D2D', borderRadius:3, borderSkipped:false},
+          {label:'Pend. expedição',   data:ativos.map(s=>+(setores[s].pesoPendExp/1000).toFixed(2)), backgroundColor:#A32D2D', borderRadius:3, borderSkipped:false},
         ]
       },
       options:{
@@ -502,7 +488,6 @@ function renderCapacidade(){
   }
 }
 
-/* ── helpers cliente ── */
 function getCliente(pedido){
   const num=String(pedido).replace(/^p-?/i,'').trim();
   return CLIENTES[num]||CLIENTES['P-'+num]||CLIENTES[pedido]||null;
@@ -517,7 +502,6 @@ function isAtrasada(d){
   return dt < hoje;
 }
 
-/* ── roteador ── */
 function renderTela(){
   if(state.tela==='geral')           renderGeral();
   else if(state.tela==='pedido')     renderPedido();
@@ -546,7 +530,6 @@ function irGeral(){state={tela:'geral',pedido:null,tag:null,produto:null};render
 function irPedido(){state.tela='pedido';state.tag=null;state.produto=null;renderTela();}
 function irTag(){state.tela='tag';state.produto=null;renderTela();}
 
-/* ── GERAL ── */
 function renderGeral(){
   document.getElementById('headerArea').innerHTML=`
   <div class="toolbar">
@@ -575,7 +558,6 @@ function renderGeral(){
   </div><div class="pedidos-grid" id="pedidosGrid"></div>`;
   document.getElementById('mainContent').innerHTML=html;
   filtrarGeral('');
-  setStatus(`${allPedidos.length} pedidos · ${fmt_t(gPeso)} total`);
 }
 
 function filtrarGeral(q){
@@ -634,7 +616,6 @@ function filtrarGeral(q){
 
 function abrirPedido(p){state={tela:'pedido',pedido:p,tag:null,produto:null};renderTela();}
 
-/* ── PEDIDO ── */
 function renderPedido(){
   document.getElementById('headerArea').innerHTML=`
   <div class="search-area">
@@ -682,11 +663,11 @@ function renderPedido(){
 
   let html=bannerHtml+metricsHTML([
     {label:'Peso total',        val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
-    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
-    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
+    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
+    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação',  val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:'#A32D2D'},
+    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:#A32D2D'},
     {label:'TAGs',              val:tagKeys.length,  sub:'no pedido'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -729,10 +710,8 @@ function renderPedido(){
   });
   html+=`</div></div>`;
   document.getElementById('mainContent').innerHTML=html;
-  setStatus(`${state.pedido}${cli&&cli.equipamento?' — '+cli.equipamento:''} · ${tagKeys.length} TAGs · ${fmt_kg(totPeso)} kg`);
 }
 
-/* ── PENDÊNCIAS ── */
 function renderPendencias(){
   document.getElementById('headerArea').innerHTML='';
   const tags=DB[state.pedido];
@@ -776,10 +755,8 @@ function renderPendencias(){
   });
   html+=`</tbody><tfoot><tr><td colspan="4">TOTAL GERAL — ${state.pedido}</td><td class="r" style="color:#A32D2D">${fmt_kg(totalPeso)} kg</td><td class="r" style="color:#A32D2D">${fmt_t(totalPeso)}</td></tr></tfoot></table></div></div>`;
   document.getElementById('mainContent').innerHTML=html;
-  setStatus(`${state.pedido} · Pendências: ${totalItens} desenhos · ${fmt_t(totalPeso)}`);
 }
 
-/* ── TAG ── */
 function renderTag(){
   document.getElementById('headerArea').innerHTML='';
   const produtos=DB[state.pedido][state.tag];
@@ -792,11 +769,11 @@ function renderTag(){
   const maxProd=Math.max(...prodKeys.map(p=>sumItens(produtos[p],'pesoTotal')),1);
   let html=metricsHTML([
     {label:'Peso total TAG',   val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
-    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
-    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
+    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:'#A32D2D'},
+    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:#A32D2D'},
     {label:'Produtos',         val:prodKeys.length, sub:'clique para detalhar'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -824,26 +801,24 @@ function renderTag(){
   });
   html+=`</div></div>`;
   document.getElementById('mainContent').innerHTML=html;
-  setStatus(`${state.pedido} › ${state.tag} · ${prodKeys.length} produtos`);
 }
 
-/* ── PRODUTO ── */
 function renderProduto(){
   document.getElementById('headerArea').innerHTML='';
   const itens=DB[state.pedido][state.tag][state.produto];
   let totPeso=0,totFab=0,totExp=0,totPF=0,totPE=0;
   itens.forEach(it=>{totPeso+=it.pesoTotal;totFab+=it.fabricado;totExp+=it.expedido;totPF+=Math.max(0,it.pendFab);totPE+=Math.max(0,it.pesoPendExp);});
   const naEmpresa=Math.max(0,totFab-totExp);
-  const pctFab=totPeso>0?Math.min(100,totFab/totPeso*100):0;
-  const pctExp=totPeso>0?Math.min(100,totExp/totPeso*100):0;
+  const pctFab=totPeso>0?Math.min(100,totFab/totTotal*100):0;
+  const pctExp=totPeso>0?Math.min(100,totExp/totTotal*100):0;
   const itensPend=itens.filter(it=>it.pesoPendExp>0);
   let html=metricsHTML([
     {label:'Peso total',       val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
-    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
-    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
+    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:itensPend.length+' desenhos',color:'#A32D2D'},
+    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:itensPend.length+' desenhos',color:#A32D2D'},
     {label:'Itens',            val:itens.length,    sub:'neste produto'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -875,7 +850,6 @@ function renderProduto(){
       </tr>`;
     }).join('')}</tbody></table></div></div>`;
   document.getElementById('mainContent').innerHTML=html;
-  setStatus(`${state.pedido} › ${state.tag} › ${state.produto} · ${itens.length} itens`);
 }
 
 function abrirTag(tag){state.tela='tag';state.tag=tag;state.produto=null;renderTela();}
