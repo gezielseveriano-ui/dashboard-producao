@@ -1,5 +1,5 @@
 <style>
-/* ... (Mantenha o CSS que você já tem no arquivo) ... */
+/* Mantenha todo o seu CSS original aqui, está perfeito */
 </style>
 
 <div class="top-bar">
@@ -13,14 +13,52 @@
 <div id="capacidadeSection"></div>
 <div id="headerArea"></div>
 <div class="nav-bar" id="navBar" style="display:none"></div>
-<div id="mainContent">
-  <div class="empty"><i class="ti ti-loader"></i> Carregando dados...</div>
-</div>
-<div class="status-bar" id="statusBar">Iniciando...</div>
+<div id="mainContent"></div>
+<div class="status-bar" id="statusBar">Conectando ao servidor...</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// [COLE AQUI TODA A LÓGICA DE JAVASCRIPT QUE VOCÊ TINHA NO CÓDIGO FUNCIONAL ANTERIOR]
-// Incluindo: let DB, CLIENTES, CAPACIDADE, processarPlanilha, renderCapacidade, renderGeral, renderPedido...
+// --- VARIÁVEIS E CONFIGURAÇÕES ---
+let DB = {}, CLIENTES = {}, CAPACIDADE = {}, allPedidos = [];
+let state = {tela:'geral', pedido:null, tag:null, produto:null};
+const hoje = new Date(); hoje.setHours(0,0,0,0);
+let capChartInstance = null;
+
+const PRODUTO_TO_SETOR = {
+  'ESTRUTURA': 'ESTRUTURA', 'USINAGEM': 'USINAGEM', 'TAMBOR': 'TAMBOR',
+  'ROLOS': 'ROLOS', 'BASES ROLETES': 'BASES ROLETES', 'REVESTIMENTO': 'REVESTIMENTO',
+  'RMF': 'RMF', 'TECMETAL': 'TECMETAL', 'CSM': 'CSM'
+};
+const SETORES_ORDEM = ['ESTRUTURA','USINAGEM','TAMBOR','ROLOS','BASES ROLETES','REVESTIMENTO','RMF','TECMETAL','CSM'];
+
+// --- LEITURA AUTOMÁTICA DO GITHUB ---
+async function carregarDadosDoGitHub() {
+  setStatus('Baixando dados do GitHub...');
+  try {
+    const res = await fetch('dados.xlsx');
+    if (!res.ok) throw new Error('dados.xlsx não encontrado.');
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, {type: 'array', cellDates: true});
+    processarPlanilha(wb);
+  } catch (err) {
+    document.getElementById('mainContent').innerHTML = `<div class="empty">Erro: ${err.message}</div>`;
+  }
+}
+
+// --- TODA A SUA LÓGICA DE PROCESSAMENTO ORIGINAL ---
+function processarPlanilha(wb) {
+  // [COLE AQUI A SUA LÓGICA DE processarPlanilha QUE ESTAVA NO SEU index.html ANTIGO]
+  // Ela deve preencher as variáveis DB, CLIENTES e CAPACIDADE
+  
+  // Após processar, chamamos as funções de renderização:
+  renderCapacidade();
+  renderTela();
+  setStatus('Dados atualizados com sucesso!');
+}
+
+// --- RESTO DAS SUAS FUNÇÕES (renderCapacidade, renderGeral, etc.) ---
+// [COLE AQUI TODAS AS SUAS FUNÇÕES DE RENDERIZAÇÃO E HELPERS ORIGINAIS]
+
+window.addEventListener('DOMContentLoaded', carregarDadosDoGitHub);
 </script>
