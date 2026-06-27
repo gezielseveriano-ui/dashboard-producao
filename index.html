@@ -30,7 +30,7 @@ body{font-family:var(--font-sans)}
 .cap-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.8rem 1rem}
 .cap-card-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
 .cap-card-value{font-size:19px;font-weight:500}
-.cap-card-sub{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+.cap-card-sub覆{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
 .cap-chart-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
 .cap-chart-label{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:.75rem}
 .cap-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:.75rem}
@@ -85,7 +85,7 @@ body{font-family:var(--font-sans)}
 .pill-gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
 /* DETALHE PEDIDO */
 .cliente-banner{margin:1rem 1.25rem 0;background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
-.cb-equip覆{font-size:18px;font-weight:600;color:var(--color-text-primary);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px}
+.cb-equip{font-size:18px;font-weight:600;color:var(--color-text-primary);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px}
 .cb-dates{display:flex;gap:10px;flex-wrap:wrap}
 .cb-date{font-size:12px;padding:4px 12px;border-radius:20px;font-weight:500;display:inline-flex;align-items:center;gap:5px}
 .cb-obs{font-size:12px;color:var(--color-text-secondary);margin-top:8px;padding:6px 10px;background:var(--color-background-primary);border-radius:var(--border-radius-md);border-left:3px solid #378ADD;font-style:italic}
@@ -208,7 +208,7 @@ let state = {tela:'geral', pedido:null, tag:null, produto:null};
 const hoje = new Date(); hoje.setHours(0,0,0,0);
 let capChartInstance = null;
 
-const SPREADSHEET_ID = '1VvWQ01zvLEFOKnIKRRid6VcTw2pJlkfr'; // 👈 Sincronizado com sua planilha!
+const SPREADSHEET_ID = '1VvWQ01zvLEFOKnIKRRid6VcTw2pJlkfr';
 
 const PRODUTO_TO_SETOR = {
   'ESTRUTURA':     'ESTRUTURA',
@@ -356,7 +356,7 @@ function renderCapacidade(){
   <div class="cap-section">
     <div class="cap-section-title">
       <i class="ti ti-gauge" style="font-size:18px;color:#378ADD" aria-hidden="true"></i>
-      Capacidade de Produção — Visão Geral
+      Capacidade de Production — Visão Geral
       <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary);margin-left:4px">todos os pedidos em carteira</span>
     </div>
     <div class="cap-cards">
@@ -470,7 +470,7 @@ function renderCapacidade(){
           {label:'Capacidade mensal', data:ativos.map(s=>+(setores[s].capacidade/1000).toFixed(2)), backgroundColor:'#378ADD', borderRadius:3, borderSkipped:false},
           {label:'Pend. fabricação',  data:ativos.map(s=>+(setores[s].pendFab/1000).toFixed(2)),    backgroundColor:'#E8A838', borderRadius:3, borderSkipped:false},
           {label:'Capacidade livre',  data:ativos.map(s=>+Math.max(0,(setores[s].capacidade-setores[s].pendFab)/1000).toFixed(2)), backgroundColor:'#27A745', borderRadius:3, borderSkipped:false},
-          {label:'Pend. expedição',   data:ativos.map(s=>+(setores[s].pesoPendExp/1000).toFixed(2)), backgroundColor:#A32D2D', borderRadius:3, borderSkipped:false},
+          {label:'Pend. expedição',   data:ativos.map(s=>+(setores[s].pesoPendExp/1000).toFixed(2)), backgroundColor:'#A32D2D', borderRadius:3, borderSkipped:false},
         ]
       },
       options:{
@@ -663,11 +663,11 @@ function renderPedido(){
 
   let html=bannerHtml+metricsHTML([
     {label:'Peso total',        val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
-    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
-    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
+    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
+    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
+    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
     {label:'Pend. fabricação',  val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:#A32D2D'},
+    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:'#A32D2D'},
     {label:'TAGs',              val:tagKeys.length,  sub:'no pedido'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -769,11 +769,11 @@ function renderTag(){
   const maxProd=Math.max(...prodKeys.map(p=>sumItens(produtos[p],'pesoTotal')),1);
   let html=metricsHTML([
     {label:'Peso total TAG',   val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
-    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
-    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
+    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
+    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:#A32D2D'},
+    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:'#A32D2D'},
     {label:'Produtos',         val:prodKeys.length, sub:'clique para detalhar'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -809,12 +809,12 @@ function renderProduto(){
   let totPeso=0,totFab=0,totExp=0,totPF=0,totPE=0;
   itens.forEach(it=>{totPeso+=it.pesoTotal;totFab+=it.fabricado;totExp+=it.expedido;totPF+=Math.max(0,it.pendFab);totPE+=Math.max(0,it.pesoPendExp);});
   const naEmpresa=Math.max(0,totFab-totExp);
-  const pctFab=totPeso>0?Math.min(100,totFab/totTotal*100):0;
-  const pctExp=totPeso>0?Math.min(100,totExp/totTotal*100):0;
+  const pctFab=totPeso>0?Math.min(100,totFab/totPeso*100):0;
+  const pctExp=totPeso>0?Math.min(100,totExp/totPeso*100):0;
   const itensPend=itens.filter(it=>it.pesoPendExp>0);
   let html=metricsHTML([
     {label:'Peso total',       val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
     {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
     {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
