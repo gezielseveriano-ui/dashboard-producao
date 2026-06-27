@@ -1,54 +1,55 @@
-<style>
-/* Mantenha todo o seu CSS original aqui */
-</style>
-
-<div class="top-bar">...</div>
-<div id="capacidadeSection"></div>
-<div id="headerArea"></div>
-<div class="nav-bar" id="navBar" style="display:none"></div>
-<div id="mainContent"></div>
-<div class="status-bar" id="statusBar">Conectando...</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-
-<script>
-// --- AQUI ESTÁ A MÁGICA ---
-// Vamos usar a sua função original de processamento, mas adicionar uma função de leitura automática.
-
-// 1. Esta função lê do GitHub
-async function carregarAutomatico() {
-    try {
-        const response = await fetch('dados.xlsx');
-        if (!response.ok) return; // Se não achar o arquivo, apenas espera o botão de importar
-        const arrayBuffer = await response.arrayBuffer();
-        processarArquivo(arrayBuffer);
-    } catch (e) {
-        console.log("Leitura automática falhou, aguardando importação manual.");
-    }
-}
-
-// 2. Esta função é a que você já tinha para processar o Excel
-function processarArquivo(buf) {
-    let wb = XLSX.read(buf, {type: 'array', cellDates: true});
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Controle de Produção</title>
+    <style>
+        /* [COLE AQUI TODO O SEU CSS ORIGINAL] */
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
     
-    // [COLE AQUI A LÓGICA QUE VOCÊ JÁ TINHA NO SEU EVENTO DE CLICK DO FILEINPUT]
-    // Ou seja, todo o código que preenche DB, CLIENTES, CAPACIDADE...
-    
-    renderCapacidade();
-    renderTela();
-}
+    <script>
+        // 1. TODAS AS SUAS VARIÁVEIS ORIGINAIS
+        let DB = {}, CLIENTES = {}, CAPACIDADE = {}, allPedidos = [];
+        let state = {tela:'geral', pedido:null, tag:null, produto:null};
+        const hoje = new Date(); hoje.setHours(0,0,0,0);
+        let capChartInstance = null;
 
-// 3. Mantemos o seu botão de importação manual original
-document.getElementById('fileInput').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const buf = await file.arrayBuffer();
-    processarArquivo(buf);
-});
+        // 2. FUNÇÃO QUE CARREGA DO GITHUB (ADICIONADA)
+        async function carregarDadosDoGitHub() {
+            setStatus('Buscando dados no servidor...');
+            try {
+                const res = await fetch('dados.xlsx');
+                if (!res.ok) throw new Error('dados.xlsx não encontrado');
+                const buf = await res.arrayBuffer();
+                processarArquivo(buf);
+            } catch (err) {
+                console.error(err);
+                setStatus('Erro: ' + err.message);
+            }
+        }
 
-// Executa a leitura do GitHub assim que a página carrega
-window.addEventListener('DOMContentLoaded', carregarAutomatico);
+        // 3. FUNÇÃO QUE PROCESSA O BUFFER (A SUA LÓGICA ORIGINAL)
+        function processarArquivo(buf) {
+            let wb = XLSX.read(buf, {type: 'array', cellDates: true});
+            // [COLE AQUI DENTRO A SUA LÓGICA DE PROCESSARPlanilha QUE VOCÊ TINHA]
+            // Certifique-se de chamar renderCapacidade() e renderTela() no final
+        }
 
-// --- COLE AQUI TODAS AS SUAS FUNÇÕES ORIGINAIS (renderGeral, etc.) ---
-</script>
+        // 4. MANTEMOS O SEU BOTÃO DE IMPORTAÇÃO (PARA CASO PRECISE)
+        document.getElementById('fileInput').addEventListener('change', async e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            processarArquivo(await file.arrayBuffer());
+        });
+
+        // 5. INICIALIZAÇÃO
+        window.addEventListener('DOMContentLoaded', carregarDadosDoGitHub);
+
+        // [COLE AQUI TODAS AS SUAS FUNÇÕES ORIGINAIS: renderGeral, renderPedido, etc]
+    </script>
+</body>
+</html>
