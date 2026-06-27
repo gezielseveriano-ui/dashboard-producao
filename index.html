@@ -95,7 +95,7 @@ body{font-family:var(--font-sans)}
 .metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.8rem 1rem}
 .metric-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
 .metric-value{font-size:18px;font-weight:500;color:var(--color-text-primary)}
-.metric-sub{font-size:10px;color:var(--text-secondary);margin-top:2px}
+.metric-sub{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
 .prog-wrap{padding:0 1.25rem .75rem}
 .prog-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .prog-label{font-size:11px;color:var(--color-text-secondary);width:100px;flex-shrink:0}
@@ -852,4 +852,41 @@ function renderProduto(){
   document.getElementById('mainContent').innerHTML=html;
 }
 
-...
+function abrirTag(tag){state.tela='tag';state.tag=tag;state.produto=null;renderTela();}
+function abrirProduto(p){state.tela='produto';state.produto=p;renderTela();}
+function onType(val){
+  const sl=document.getElementById('sugList'); if(!sl) return;
+  if(!val){sl.style.display='none';return;}
+  const q=val.replace(/^p-?/i,'').toLowerCase();
+  const hits=allPedidos.filter(p=>p.replace(/^p-?/i,'').toLowerCase().startsWith(q)).slice(0,8);
+  if(!hits.length){sl.style.display='none';return;}
+  sl.innerHTML=hits.map(p=>`<div class="sug-item" onclick="abrirPedido('${esc(p)}')">${p}</div>`).join('');
+  sl.style.display='block';
+}
+function buscar(){
+  const val=document.getElementById('pedidoInput')?.value.trim(); if(!val) return;
+  const q=val.replace(/^p-?/i,'').toLowerCase();
+  const found=allPedidos.find(p=>p.toLowerCase()===val.toLowerCase())||allPedidos.find(p=>p.replace(/^p-?/i,'').toLowerCase()===q);
+  if(found) abrirPedido(found); else setStatus(`Pedido "${val}" não encontrado.`);
+}
+document.addEventListener('click',e=>{const sl=document.getElementById('sugList');if(sl&&!e.target.closest('.sug-wrap'))sl.style.display='none';});
+
+function resumoPedido(p){
+  const tags=DB[p]; let peso=0,fab=0,exp=0,pendFab=0,pendExp=0;
+  const nTags=Object.keys(tags).length;
+  Object.values(tags).forEach(t=>Object.values(t).forEach(itens=>itens.forEach(it=>{
+    peso+=it.pesoTotal;fab+=it.fabricado;exp+=it.expedido;
+    pendFab+=Math.max(0,it.pendFab);pendExp+=Math.max(0,it.pesoPendExp);
+  })));
+  return{peso,fab,exp,pendFab,pendExp,nTags,pctFab:peso>0?Math.min(100,fab/peso*100):0,pctExp:peso>0?Math.min(100,exp/peso*100):0};
+}
+function sumTag(o,c){return Object.values(o).reduce((s,i)=>s+sumItens(i,c),0);}
+function sumTagField(o,c){return Object.values(o).reduce((s,i)=>s+i.reduce((a,it)=>a+Math.max(0,it[c]),0),0);}
+function sumItens(i,c){return i.reduce((s,it)=>s+(it[c]||0),0);}
+function fmt_t(kg){return (kg/1000).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' t';}
+function fmt_kg(kg){return kg.toLocaleString('pt-BR',{maximumFractionDigits:0});}
+function esc(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function setStatus(m){document.getElementById('statusBar').textContent=m;}
+function metricsHTML(items){return `<div class="metrics">${items.map(m=>`<div class="metric"><div class="metric-label">${m.label}</div><div class="metric-value" style="${m.color?'color:'+m.color:''}">${m.val}</div>${m.sub?`<div class="metric-sub">${m.sub}</div>`:''}</div>`).join('')}</div>`;}
+function progHTML(f,e){return `<div class="prog-wrap"><div class="prog-row"><span class="prog-label">Fabricação</span><div class="prog-bar"><div class="prog-fill" style="width:${f.toFixed(1)}%;background:#378ADD"></div></div><span class="prog-pct">${f.toFixed(0)}%</span></div><div class="prog-row"><span class="prog-label">Expedição</span><div class="prog-bar"><div class="prog-fill" style="width:${e.toFixed(1)}%;background:#3B6D11"></div></div><span class="prog-pct">${e.toFixed(0)}%</span></div></div>`;}
+</script>
