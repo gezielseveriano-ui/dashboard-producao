@@ -30,7 +30,7 @@ body{font-family:var(--font-sans)}
 .cap-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.8rem 1rem}
 .cap-card-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
 .cap-card-value{font-size:19px;font-weight:500}
-.cap-card-sub覆{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+.cap-card-sub{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
 .cap-chart-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
 .cap-chart-label{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:.75rem}
 .cap-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:.75rem}
@@ -95,7 +95,7 @@ body{font-family:var(--font-sans)}
 .metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.8rem 1rem}
 .metric-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
 .metric-value{font-size:18px;font-weight:500;color:var(--color-text-primary)}
-.metric-sub{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+.metric-sub{font-size:10px;color:var(--text-secondary);margin-top:2px}
 .prog-wrap{padding:0 1.25rem .75rem}
 .prog-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .prog-label{font-size:11px;color:var(--color-text-secondary);width:100px;flex-shrink:0}
@@ -356,7 +356,7 @@ function renderCapacidade(){
   <div class="cap-section">
     <div class="cap-section-title">
       <i class="ti ti-gauge" style="font-size:18px;color:#378ADD" aria-hidden="true"></i>
-      Capacidade de Production — Visão Geral
+      Capacidade de Produção — Visão Geral
       <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary);margin-left:4px">todos os pedidos em carteira</span>
     </div>
     <div class="cap-cards">
@@ -663,11 +663,11 @@ function renderPedido(){
 
   let html=bannerHtml+metricsHTML([
     {label:'Peso total',        val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
-    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
-    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
+    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
+    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação',  val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:'#A32D2D'},
+    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:#A32D2D'},
     {label:'TAGs',              val:tagKeys.length,  sub:'no pedido'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -719,11 +719,11 @@ function renderPendencias(){
   const grupos=[];
   Object.keys(tags).sort().forEach(tag=>{
     Object.keys(tags[tag]).sort().forEach(produto=>{
-      const pend=tags[tag][produto].filter(it=>it.pesoPendExp>0);
-      if(!pend.length) return;
-      const pp=pend.reduce((s,it)=>s+it.pesoPendExp,0);
-      totalPeso+=pp; totalItens+=pend.length;
-      grupos.push({tag,produto,itens:pend.sort((a,b)=>b.pesoPendExp-a.pesoPendExp),pesoProd:pp});
+      const append=tags[tag][produto].filter(it=>it.pesoPendExp>0);
+      if(!append.length) return;
+      const pp=append.reduce((s,it)=>s+it.pesoPendExp,0);
+      totalPeso+=pp; totalItens+=append.length;
+      grupos.push({tag,produto,itens:append.sort((a,b)=>b.pesoPendExp-a.pesoPendExp),pesoProd:pp});
     });
   });
   if(!grupos.length){
@@ -769,11 +769,11 @@ function renderTag(){
   const maxProd=Math.max(...prodKeys.map(p=>sumItens(produtos[p],'pesoTotal')),1);
   let html=metricsHTML([
     {label:'Peso total TAG',   val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
-    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
-    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
+    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
+    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:'#A32D2D'},
+    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:#A32D2D'},
     {label:'Produtos',         val:prodKeys.length, sub:'clique para detalhar'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -814,7 +814,7 @@ function renderProduto(){
   const itensPend=itens.filter(it=>it.pesoPendExp>0);
   let html=metricsHTML([
     {label:'Peso total',       val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
     {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
     {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
@@ -852,41 +852,4 @@ function renderProduto(){
   document.getElementById('mainContent').innerHTML=html;
 }
 
-function abrirTag(tag){state.tela='tag';state.tag=tag;state.produto=null;renderTela();}
-function abrirProduto(p){state.tela='produto';state.produto=p;renderTela();}
-function onType(val){
-  const sl=document.getElementById('sugList'); if(!sl) return;
-  if(!val){sl.style.display='none';return;}
-  const q=val.replace(/^p-?/i,'').toLowerCase();
-  const hits=allPedidos.filter(p=>p.replace(/^p-?/i,'').toLowerCase().startsWith(q)).slice(0,8);
-  if(!hits.length){sl.style.display='none';return;}
-  sl.innerHTML=hits.map(p=>`<div class="sug-item" onclick="abrirPedido('${esc(p)}')">${p}</div>`).join('');
-  sl.style.display='block';
-}
-function buscar(){
-  const val=document.getElementById('pedidoInput')?.value.trim(); if(!val) return;
-  const q=val.replace(/^p-?/i,'').toLowerCase();
-  const found=allPedidos.find(p=>p.toLowerCase()===val.toLowerCase())||allPedidos.find(p=>p.replace(/^p-?/i,'').toLowerCase()===q);
-  if(found) abrirPedido(found); else setStatus(`Pedido "${val}" não encontrado.`);
-}
-document.addEventListener('click',e=>{const sl=document.getElementById('sugList');if(sl&&!e.target.closest('.sug-wrap'))sl.style.display='none';});
-
-function resumoPedido(p){
-  const tags=DB[p]; let peso=0,fab=0,exp=0,pendFab=0,pendExp=0;
-  const nTags=Object.keys(tags).length;
-  Object.values(tags).forEach(t=>Object.values(t).forEach(itens=>itens.forEach(it=>{
-    peso+=it.pesoTotal;fab+=it.fabricado;exp+=it.expedido;
-    pendFab+=Math.max(0,it.pendFab);pendExp+=Math.max(0,it.pesoPendExp);
-  })));
-  return{peso,fab,exp,pendFab,pendExp,nTags,pctFab:peso>0?Math.min(100,fab/peso*100):0,pctExp:peso>0?Math.min(100,exp/peso*100):0};
-}
-function sumTag(o,c){return Object.values(o).reduce((s,i)=>s+sumItens(i,c),0);}
-function sumTagField(o,c){return Object.values(o).reduce((s,i)=>s+i.reduce((a,it)=>a+Math.max(0,it[c]),0),0);}
-function sumItens(i,c){return i.reduce((s,it)=>s+(it[c]||0),0);}
-function fmt_t(kg){return (kg/1000).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' t';}
-function fmt_kg(kg){return kg.toLocaleString('pt-BR',{maximumFractionDigits:0});}
-function esc(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
-function setStatus(m){document.getElementById('statusBar').textContent=m;}
-function metricsHTML(items){return `<div class="metrics">${items.map(m=>`<div class="metric"><div class="metric-label">${m.label}</div><div class="metric-value" style="${m.color?'color:'+m.color:''}">${m.val}</div>${m.sub?`<div class="metric-sub">${m.sub}</div>`:''}</div>`).join('')}</div>`;}
-function progHTML(f,e){return `<div class="prog-wrap"><div class="prog-row"><span class="prog-label">Fabricação</span><div class="prog-bar"><div class="prog-fill" style="width:${f.toFixed(1)}%;background:#378ADD"></div></div><span class="prog-pct">${f.toFixed(0)}%</span></div><div class="prog-row"><span class="prog-label">Expedição</span><div class="prog-bar"><div class="prog-fill" style="width:${e.toFixed(1)}%;background:#3B6D11"></div></div><span class="prog-pct">${e.toFixed(0)}%</span></div></div>`;}
-</script>
+...
