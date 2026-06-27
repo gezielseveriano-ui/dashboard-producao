@@ -1,54 +1,41 @@
-<style>
-/* CSS Completo */
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Inter,Segoe UI,sans-serif;background:#f4f7fc}
-.top-bar{background:linear-gradient(135deg,#1e3c72,#2a5298);color:white;padding:18px 24px;border-radius:0 0 20px 20px;box-shadow:0 10px 25px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:space-between}
-.top-bar h1{font-size:20px;font-weight:700}
-.toolbar,.search-area,.nav-bar{background:white;margin:12px;border-radius:16px;box-shadow:0 4px 18px rgba(15,23,42,.06);padding:1rem;display:flex;gap:10px}
-.gm,.metric,.cap-card,.pedido-card,.card{background:white!important;border-radius:18px!important;box-shadow:0 6px 24px rgba(15,23,42,.08);padding:1rem}
-.pedidos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;padding:1.25rem}
-.empty{text-align:center;padding:3rem;color:#64748b}
-</style>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Controle de Produção</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div id="app" class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-4">Carregando dados...</h1>
+        <div id="resultado"></div>
+    </div>
 
-<div class="top-bar">
-  <h1>Controle de Produção</h1>
-  <div id="statusBar" style="font-size:12px">Iniciando...</div>
-</div>
-<div id="mainContent">
-  <div class="empty">Carregando dados...</div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script>
-let DB = {}, CLIENTES = {}, CAPACIDADE = {}, allPedidos = [];
-let state = {tela:'geral', pedido:null};
-
-window.addEventListener('DOMContentLoaded', carregarDadosDoGitHub);
-
-async function carregarDadosDoGitHub() {
-  try {
-    const res = await fetch('dados.xlsx');
-    if (!res.ok) throw new Error('Arquivo dados.xlsx não encontrado.');
-    const buf = await res.arrayBuffer();
-    const wb = XLSX.read(buf, {type: 'array', cellDates: true});
-    processarPlanilha(wb);
-  } catch (err) {
-    document.getElementById('mainContent').innerHTML = `<div class="empty">Erro: ${err.message}</div>`;
-  }
-}
-
-function processarPlanilha(wb) {
-  // Aqui entra toda a lógica que tínhamos antes para preencher DB, CLIENTES e CAPACIDADE
-  // Como o código é longo, certifique-se de que ele está completo aqui dentro
-  // ... (Cole aqui toda a lógica de processamento de linhas que tínhamos anteriormente)
-  
-  renderGeral();
-}
-
-function renderGeral() {
-  document.getElementById('mainContent').innerHTML = `<div class="pedidos-grid">Dados carregados com sucesso!</div>`;
-}
-
-// ... (Adicione todas as outras funções de renderização: renderPedido, renderTag, etc)
-</script>
+    <script>
+        async function carregar() {
+            try {
+                const res = await fetch('dados.xlsx');
+                const arrayBuffer = await res.arrayBuffer();
+                const wb = XLSX.read(arrayBuffer, {type: 'array'});
+                
+                // Exemplo básico de leitura da aba "MICRO"
+                const ws = wb.Sheets['MICRO'];
+                const data = XLSX.utils.sheet_to_json(ws);
+                
+                // Cálculo do total que estava a dar erro
+                let totTotal = data.reduce((acc, curr) => acc + (curr.Peso || 0), 0);
+                
+                document.getElementById('app').innerHTML = `
+                    <div class="bg-white p-6 rounded shadow">
+                        <h2 class="text-xl">Total Produzido: ${totTotal.toLocaleString()} kg</h2>
+                    </div>
+                `;
+            } catch (e) {
+                document.getElementById('resultado').innerHTML = "Erro ao carregar: " + e.message;
+            }
+        }
+        carregar();
+    </script>
+</body>
+</html>
