@@ -1,41 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Controle de Produção</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-4">
-    <div id="app" class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-bold mb-4">Carregando dados...</h1>
-        <div id="resultado"></div>
-    </div>
-
-    <script>
-        async function carregar() {
-            try {
-                const res = await fetch('dados.xlsx');
-                const arrayBuffer = await res.arrayBuffer();
-                const wb = XLSX.read(arrayBuffer, {type: 'array'});
-                
-                // Exemplo básico de leitura da aba "MICRO"
-                const ws = wb.Sheets['MICRO'];
-                const data = XLSX.utils.sheet_to_json(ws);
-                
-                // Cálculo do total que estava a dar erro
-                let totTotal = data.reduce((acc, curr) => acc + (curr.Peso || 0), 0);
-                
-                document.getElementById('app').innerHTML = `
-                    <div class="bg-white p-6 rounded shadow">
-                        <h2 class="text-xl">Total Produzido: ${totTotal.toLocaleString()} kg</h2>
-                    </div>
-                `;
-            } catch (e) {
-                document.getElementById('resultado').innerHTML = "Erro ao carregar: " + e.message;
-            }
-        }
-        carregar();
-    </script>
-</body>
-</html>
+<script>
+async function carregar() {
+    const res = await fetch('dados.xlsx');
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, {type: 'array'});
+    const data = XLSX.utils.sheet_to_json(wb.Sheets['MICRO']);
+    
+    // Isto vai listar no console (F12) o que o site está a ler
+    console.log("Dados lidos:", data);
+    
+    if (data.length > 0) {
+        // Mostra o nome das colunas que ele encontrou
+        alert("Colunas encontradas: " + Object.keys(data[0]).join(", "));
+    }
+}
+carregar();
+</script>
