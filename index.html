@@ -183,7 +183,7 @@ body{
     <i class="ti ti-building-factory-2" style="font-size:18px;color:#378ADD" aria-hidden="true"></i>
     <h1>Controle de Produção</h1>
   </div>
-  <div style="font-size:12px;background:rgba(255,255,255,0.15);padding:6px 12px;border-radius:8px">🔄 Conectado ao Google Sheets</div>
+  <div style="font-size:12px;background:rgba(255,255,255,0.15);padding:6px 12px;border-radius:8px">🔄 Lendo dados do GitHub</div>
 </div>
 
 <div id="capacidadeSection" style="display:none"></div>
@@ -192,7 +192,7 @@ body{
 <div id="mainContent">
   <div class="empty">
     <i class="ti ti-loader" aria-hidden="true"></i>
-    Carregando informações direto da planilha do Google Planilhas...
+    Buscando arquivo do Excel no servidor...
   </div>
 </div>
 <div class="status-bar" id="statusBar">Iniciando conexão...</div>
@@ -208,8 +208,6 @@ let state = {tela:'geral', pedido:null, tag:null, produto:null};
 const hoje = new Date(); hoje.setHours(0,0,0,0);
 let capChartInstance = null;
 
-const SPREADSHEET_ID = '1VvWQ01zvLEFOKnIKRRid6VcTw2pJlkfr';
-
 const PRODUTO_TO_SETOR = {
   'ESTRUTURA':     'ESTRUTURA',
   'USINAGEM':      'USINAGEM',
@@ -224,22 +222,23 @@ const PRODUTO_TO_SETOR = {
 const SETORES_ORDEM = ['ESTRUTURA','USINAGEM','TAMBOR','ROLOS','BASES ROLETES','REVESTIMENTO','RMF','TECMETAL','CSM'];
 
 window.addEventListener('DOMContentLoaded', () => {
-  carregarDadosDoGoogle();
+  carregarDadosDoGitHub();
 });
 
-async function carregarDadosDoGoogle() {
+async function carregarDadosDoGitHub() {
   try {
-    setStatus('Buscando planilha no Google Drive...');
-    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=xlsx`;
+    setStatus('Lendo arquivo de dados...');
+    // O site vai procurar um arquivo exato com o nome 'dados.xlsx'
+    const url = 'dados.xlsx'; 
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Não foi possível acessar a planilha. Verifique se ela foi publicada na web.');
+    if (!res.ok) throw new Error('Arquivo dados.xlsx não encontrado no GitHub. Faça o upload dele.');
     
     const buf = await res.arrayBuffer();
     const wb = XLSX.read(buf, {type: 'array', cellDates: true});
     processarPlanilha(wb);
   } catch (err) {
-    setStatus('Erro de conexão: ' + err.message);
-    document.getElementById('mainContent').innerHTML = `<div class="empty" style="color:#A32D2D"><i class="ti ti-alert-triangle"></i> Falha ao carregar os dados automático. Verifique as configurações.</div>`;
+    setStatus('Aguardando arquivo Excel: ' + err.message);
+    document.getElementById('mainContent').innerHTML = `<div class="empty" style="color:#A32D2D"><i class="ti ti-upload"></i> Falta o arquivo Excel.<br><br><span style="font-size:12px;color:var(--color-text-secondary)">Por favor, salve a sua planilha com o nome exato <b>dados.xlsx</b> e faça o upload dela no repositório do GitHub.</span></div>`;
   }
 }
 
@@ -283,7 +282,7 @@ function processarPlanilha(wb) {
 
   DB = {};
   const msName = wb.SheetNames.find(n=>n.trim().toUpperCase()==='MICRO');
-  if(!msName){setStatus('Aba MICRO não encontrada.');return;}
+  if(!msName){setStatus('Aba MICRO não encontrada no Excel.');return;}
   const rows = XLSX.utils.sheet_to_json(wb.Sheets[msName],{header:1,defval:null});
   let nLinhas=0;
   for(let i=1;i<rows.length;i++){
@@ -309,7 +308,7 @@ function processarPlanilha(wb) {
   state={tela:'geral',pedido:null,tag:null,produto:null};
   renderCapacidade();
   renderTela();
-  setStatus(`Sincronizado automaticamente · ${allPedidos.length} pedidos em carteira`);
+  setStatus(`Sincronizado via GitHub · ${allPedidos.length} pedidos em carteira`);
 }
 
 function calcCapacidadePorSetor(){
@@ -663,11 +662,11 @@ function renderPedido(){
 
   let html=bannerHtml+metricsHTML([
     {label:'Peso total',        val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
-    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
-    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
+    {label:'Na empresa',        val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
+    {label:'Fabricado',         val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
+    {label:'Expedido',          val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
     {label:'Pend. fabricação',  val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:#A32D2D'},
+    {label:'Pend. expedição',   val:fmt_t(totPE),    sub:nDesPend+' desenhos',color:'#A32D2D'},
     {label:'TAGs',              val:tagKeys.length,  sub:'no pedido'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -769,11 +768,11 @@ function renderTag(){
   const maxProd=Math.max(...prodKeys.map(p=>sumItens(produtos[p],'pesoTotal')),1);
   let html=metricsHTML([
     {label:'Peso total TAG',   val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
-    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
-    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
+    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
+    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:#A32D2D'},
+    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:'a expedir',color:'#A32D2D'},
     {label:'Produtos',         val:prodKeys.length, sub:'clique para detalhar'},
   ]);
   html+=progHTML(pctFab,pctExp);
@@ -814,11 +813,11 @@ function renderProduto(){
   const itensPend=itens.filter(it=>it.pesoPendExp>0);
   let html=metricsHTML([
     {label:'Peso total',       val:fmt_t(totPeso),  sub:fmt_kg(totPeso)+' kg'},
-    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:#185FA5'},
-    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:#27500A'},
-    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:#633806'},
+    {label:'Na empresa',       val:fmt_t(naEmpresa),sub:fmt_kg(naEmpresa)+' kg',color:'#185FA5'},
+    {label:'Fabricado',        val:fmt_t(totFab),   sub:pctFab.toFixed(1)+'%',color:'#27500A'},
+    {label:'Expedido',         val:fmt_t(totExp),   sub:pctExp.toFixed(1)+'%',color:'#633806'},
     {label:'Pend. fabricação', val:fmt_t(totPF),    sub:'a fabricar'},
-    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:itensPend.length+' desenhos',color:#A32D2D'},
+    {label:'Pend. expedição',  val:fmt_t(totPE),    sub:itensPend.length+' desenhos',color:'#A32D2D'},
     {label:'Itens',            val:itens.length,    sub:'neste produto'},
   ]);
   html+=progHTML(pctFab,pctExp);
